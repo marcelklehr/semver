@@ -7,7 +7,7 @@ The `semver` package provides the ability to work with [Semantic Versions](http:
 * Check if a semantic version fits within a set of constraints
 * Optionally work with a `v` prefix
 
-[![Build Status](https://travis-ci.org/Masterminds/semver.svg)](https://travis-ci.org/Masterminds/semver) [![Build status](https://ci.appveyor.com/api/projects/status/jfk66lib7hb985k8/branch/master?svg=true&passingText=windows%20build%20passing&failingText=windows%20build%20failing)](https://ci.appveyor.com/project/mattfarina/semver/branch/master) [![GoDoc](https://godoc.org/github.com/Masterminds/semver?status.png)](https://godoc.org/github.com/Masterminds/semver) [![Go Report Card](http://goreportcard.com/badge/Masterminds/semver)](http://goreportcard.com/report/Masterminds/semver)
+This is a fork of [Masterminds/semver](https://github.com/Masterminds/semver) that is compatible with [npm's semver library](https://npmjs.com/package/semver)
 
 ## Parsing Semantic Versions
 
@@ -58,9 +58,9 @@ parts of the package.
 ## Basic Comparisons
 
 There are two elements to the comparisons. First, a comparison string is a list
-of comma separated and comparisons. These are then separated by || separated or
-comparisons. For example, `">= 1.2, < 3.0.0 || >= 4.2.3"` is looking for a
-comparison that's greater than or equal to 1.2 and less than 3.0.0 or is
+of space separated "and" clauses. These are separated by "||" to form "or"
+clauses. For example, `">= 1.2.0 < 3.0.0 || >= 4.2.3"` is looking for a
+comparison that's greater than or equal to 1.2.0 and less than 3.0.0 or is
 greater than or equal to 4.2.3.
 
 The basic comparisons are:
@@ -77,8 +77,8 @@ The basic comparisons are:
 There are multiple methods to handle ranges and the first is hyphens ranges.
 These look like:
 
-* `1.2 - 1.4.5` which is equivalent to `>= 1.2, <= 1.4.5`
-* `2.3.4 - 4.5` which is equivalent to `>= 2.3.4, <= 4.5`
+* `1.2 - 1.4.5` which is equivalent to `>= 1.2 <= 1.4.5`
+* `2.3.4 - 4.5` which is equivalent to `>= 2.3.4 <= 4.5`
 
 ## Wildcards In Comparisons
 
@@ -88,8 +88,12 @@ back to the pack level comparison (see tilde below). For example,
 
 * `1.2.x` is equivalent to `>= 1.2.0, < 1.3.0`
 * `>= 1.2.x` is equivalent to `>= 1.2.0`
-* `<= 2.x` is equivalent to `<= 3`
+* `<= 2.x` is equivalent to `<= 3.0.0`
 * `*` is equivalent to `>= 0.0.0`
+
+You can also completely omit the wildcard character, to get a wildcard:
+
+* `1.2` is equivalent to `1.2.x`, which means `>= 1.2.0, < 1.3.0`
 
 ## Tilde Range Comparisons (Patch)
 
@@ -97,21 +101,21 @@ The tilde (`~`) comparison operator is for patch level ranges when a minor
 version is specified and major level changes when the minor number is missing.
 For example,
 
-* `~1.2.3` is equivalent to `>= 1.2.3, < 1.3.0`
-* `~1` is equivalent to `>= 1, < 2`
-* `~2.3` is equivalent to `>= 2.3, < 2.4`
-* `~1.2.x` is equivalent to `>= 1.2.0, < 1.3.0`
-* `~1.x` is equivalent to `>= 1, < 2`
+* `~1.2.3` is equivalent to `>= 1.2.3 < 1.3.0`
+* `~1` is equivalent to `>= 1 < 2`
+* `~2.3` is equivalent to `>= 2.3 < 2.4`
+* `~1.2.x` is equivalent to `>= 1.2.0 < 1.3.0`
+* `~1.x` is equivalent to `>= 1 < 2`
 
 ## Caret Range Comparisons (Major)
 
 The caret (`^`) comparison operator is for major level changes. This is useful
 when comparisons of API versions as a major change is API breaking. For example,
 
-* `^1.2.3` is equivalent to `>= 1.2.3, < 2.0.0`
-* `^1.2.x` is equivalent to `>= 1.2.0, < 2.0.0`
-* `^2.3` is equivalent to `>= 2.3, < 3`
-* `^2.x` is equivalent to `>= 2.0.0, < 3`
+* `^1.2.3` is equivalent to `>= 1.2.3 < 2.0.0`
+* `^1.2.x` is equivalent to `>= 1.2.0 < 2.0.0`
+* `^2.3` is equivalent to `>= 2.3 < 3`
+* `^2.x` is equivalent to `>= 2.0.0 < 3`
 
 # Validation
 
@@ -119,7 +123,7 @@ In addition to testing a version against a constraint, a version can be validate
 against a constraint. When validation fails a slice of errors containing why a
 version didn't meet the constraint is returned. For example,
 
-    c, err := semver.NewConstraint("<= 1.2.3, >= 1.4")
+    c, err := semver.NewConstraint("<= 1.2.3 >= 1.4")
     if err != nil {
         // Handle constraint not being parseable.
     }
@@ -142,5 +146,5 @@ version didn't meet the constraint is returned. For example,
 
 # Contribute
 
-If you find an issue or want to contribute please file an [issue](https://github.com/Masterminds/semver/issues)
-or [create a pull request](https://github.com/Masterminds/semver/pulls).
+If you find an issue or want to contribute please file an [issue](https://github.com/marcelklehr/semver/issues)
+or [create a pull request](https://github.com/marcelklehr/semver/pulls).
