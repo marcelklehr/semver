@@ -20,19 +20,26 @@ func NewConstraint(c string) (*Constraints, error) {
 	// Rewrite - ranges into a comparison operation.
 	c = rewriteRange(c)
 
-	ors := strings.Split(c, "||")
+  ors := strings.Split(c, "||")
 	or := make([][]*constraint, len(ors))
 	for k, v := range ors {
-		cs := strings.Split(v, ",")
-		result := make([]*constraint, len(cs))
-		for i, s := range cs {
+		ands := constraintUnboundedRegex.FindAllString(v, -1)
+
+    // Validate logical "and" sequence: Remove all legal primitive constraints and whitespace
+    // If the resulting string is not empty, there was an illegal character in there somewhere
+    unexpected := strings.Trim(constraintUnboundedRegex.ReplaceAllLiteralString(v, " "), " "); if unexpected != "" {
+      return nil, errors.New(fmt.Sprintf("Unexpected character in constraint %s: %s", c, unexpected))
+    }
+
+    result := make([]*constraint, len(ands))
+		for i, s := range ands {
 			pc, err := parseConstraint(s)
 			if err != nil {
 				return nil, err
 			}
-
 			result[i] = pc
 		}
+
 		or[k] = result
 	}
 
@@ -86,6 +93,7 @@ func (cs Constraints) Validate(v *Version) (bool, []error) {
 var constraintOps map[string]cfunc
 var constraintMsg map[string]string
 var constraintRegex *regexp.Regexp
+var constraintUnboundedRegex *regexp.Regexp
 
 func init() {
 	constraintOps = map[string]cfunc{
@@ -127,9 +135,14 @@ func init() {
 		`^\s*(%s)\s*(%s)\s*$`,
 		strings.Join(ops, "|"),
 		cvRegex))
+	
+  constraintUnboundedRegex = regexp.MustCompile(fmt.Sprintf(
+		`(%s)\s*(%s)`,
+		strings.Join(ops, "|"),
+		cvRegex))
 
 	constraintRangeRegex = regexp.MustCompile(fmt.Sprintf(
-		`\s*(%s)\s*-\s*(%s)\s*`,
+		`(%s)\s*-\s*(%s)`,
 		cvRegex, cvRegex))
 }
 
@@ -334,7 +347,7 @@ func rewriteRange(i string) string {
 	}
 	o := i
 	for _, v := range m {
-		t := fmt.Sprintf(">= %s, <= %s", v[1], v[11])
+		t := fmt.Sprintf(">= %s <= %s", v[1], v[11])
 		o = strings.Replace(o, v[0], t, 1)
 	}
 
